@@ -1,0 +1,717 @@
+function varargout = PDcalculator(varargin)
+% PDCALCULATOR M-file for PDcalculator.fig
+%      PDCALCULATOR, by itself, creates a new PDCALCULATOR or raises the existing
+%      singleton*.
+%
+%      H = PDCALCULATOR returns the handle to a new PDCALCULATOR or the handle to
+%      the existing singleton*.
+%
+%      PDCALCULATOR('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in PDCALCULATOR.M with the given input arguments.
+%
+%      PDCALCULATOR('Property','Value',...) creates a new PDCALCULATOR or raises the
+%      existing singleton*.  Starting from the left, property value pairs are
+%      applied to the GUI before PDcalculator_OpeningFunction gets called.  An
+%      unrecognized property name or invalid value makes property application
+%      stop.  All inputs are passed to PDcalculator_OpeningFcn via varargin.
+%
+%      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
+%      instance to run (singleton)".
+%
+% See also: GUIDE, GUIDATA, GUIHANDLES
+
+% Copyright 2002-2003 The MathWorks, Inc.
+
+% Edit the above text to modify the response to help PDcalculator
+
+% Last Modified by GUIDE v2.5 22-Jun-2006 18:36:05
+
+% Begin initialization code - DO NOT EDIT
+gui_Singleton = 1;
+gui_State = struct('gui_Name',       mfilename, ...
+                   'gui_Singleton',  gui_Singleton, ...
+                   'gui_OpeningFcn', @PDcalculator_OpeningFcn, ...
+                   'gui_OutputFcn',  @PDcalculator_OutputFcn, ...
+                   'gui_LayoutFcn',  [] , ...
+                   'gui_Callback',   []);
+if nargin && ischar(varargin{1})
+    gui_State.gui_Callback = str2func(varargin{1});
+end
+
+if nargout
+    [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+else
+    gui_mainfcn(gui_State, varargin{:});
+end
+% End initialization code - DO NOT EDIT
+
+
+% --- Executes just before PDcalculator is made visible.
+function PDcalculator_OpeningFcn(hObject, eventdata, handles, varargin)
+% This function has no output args, see OutputFcn.
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% varargin   command line arguments to PDcalculator (see VARARGIN)
+
+% Choose default command line output for PDcalculator
+handles.output = hObject;
+
+% Update handles structure
+guidata(hObject, handles);
+
+% UIWAIT makes PDcalculator wait for user response (see UIRESUME)
+% uiwait(handles.figure1);
+
+
+% --- Outputs from this function are returned to the command line.
+function varargout = PDcalculator_OutputFcn(hObject, eventdata, handles) 
+% varargout  cell array for returning output args (see VARARGOUT);
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Get default command line output from handles structure
+varargout{1} = handles.output;
+
+
+% --- Executes on selection change in popupmenu1.
+function popupmenu1_Callback(hObject, eventdata, handles)
+% hObject    handle to popupmenu1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = get(hObject,'String') returns popupmenu1 contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupmenu1
+
+
+% --- Executes during object creation, after setting all properties.
+function popupmenu1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupmenu1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc
+    set(hObject,'BackgroundColor','white');
+else
+    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+end
+
+
+% --- Executes on button press in pushbutton1.
+function pushbutton1_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+menu=get(handles.popupmenu1,'value');
+switch menu
+    
+case 1
+        %Nada pasa
+        
+case 2
+%PROGRAMA QUE CALCULA Y GRAFICA EL DIAGRAMA DE FASE DEL 
+%SEMICONDUCTOR BINARIO III-V GaSb.
+
+R=8.32000896;
+DSf=66.15144;
+Tf=983;
+DSfTf=65026.8655;
+
+P0=600;
+
+m=0;
+
+barra=waitbar(0,'Calculando Diagrama de Fase del GaSb...');
+for x=eps:0.001:0.97+eps,
+vieland=inline(['-0.5*((' num2str(R) '*T*' num2str(log(4*x*(1-x))) '+' num2str(DSfTf) '-' num2str(DSf) '*T)' '/' num2str((0.5-x)^2) ') -(19677.96-25.1208*T)']);
+T=fsolve(vieland,P0,optimset('Display','off'));
+[Temp]=T-273.15;
+m=m+1;
+Temperatura(m)=Temp;
+waitbar(x/(0.97+eps),barra)
+end
+close(barra);
+Tempra=Temperatura';
+
+xt=eps:0.001:0.97+eps;
+
+axes(handles.axes1);
+plot(xt,Tempra,'b','LineWidth',3)
+axis([-0.01 0.97 0 800]);
+title('Diagrama de Fase del GaSb','FontSize',12,'Backgroundcolor',[1 1 0.47],'FontWeight','Bold');
+xlabel('Fraccion Atomica','FontSize',11,'FontWeight','Bold');
+ylabel('Temperatura °C','FontSize',11,'FontWeight','Bold');
+grid('on');
+%hold('all');
+ 
+axes(handles.axes2);
+semilogy(Tempra,xt,'b','LineWidth',3)
+axis([250 800 1E-3 0.97]);
+title('Diagrama de Fase del GaSb','FontSize',12,'Backgroundcolor',[1 1 0.47],'FontWeight','Bold');
+xlabel('Temperatura °C','FontSize',11,'FontWeight','Bold');
+ylabel('Fraccion Atomica','FontSize',11,'FontWeight','Bold');
+grid('on');
+%hold('all');
+
+case 3
+%PROGRAMA QUE CALCULA Y GRAFICA EL DIAGRAMA DE FASE DEL 
+%SEMICONDUCTOR BINARIO III-V GaAs.
+
+R=8.32000896;
+DSf=69.668352;
+Tf=1511;
+DSfTf=1.052689E5;
+
+P0=720;
+
+m=0;
+
+barra=waitbar(0,'Calculando Diagrama de Fase del GaAs...');
+for x=eps:0.001:0.97+eps,
+vieland=inline(['-0.5*((' num2str(R) '*T*' num2str(log(4*x*(1-x))) '+' num2str(DSfTf) '-' num2str(DSf) '*T)' '/' num2str((0.5-x)^2) ') -(2.160389E4-38.351088*T)']);
+T=fsolve(vieland,P0,optimset('Display','off'));
+[Temp]=T-273.15;
+m=m+1;
+Temperatura(m)=Temp;
+waitbar(x/(0.97+eps),barra)
+end
+close(barra);
+Tempra=Temperatura';
+
+xt=eps:0.001:0.97+eps;
+
+axes(handles.axes1);
+plot(xt,Tempra,'g','LineWidth',3)
+axis([-0.01 0.97 440 1400]);
+title('Diagrama de Fase del GaAs','FontSize',12,'Backgroundcolor',[1 1 0.47],'FontWeight','Bold');
+xlabel('Fraccion Atomica','FontSize',11,'FontWeight','Bold');
+ylabel('Temperatura °C','FontSize',11,'FontWeight','Bold');
+grid('on');
+
+ 
+axes(handles.axes2);
+semilogy(Tempra,xt,'g','LineWidth',3)
+axis([400 1400 1E-3 0.97]);
+title('Diagrama de Fase del GaAs','FontSize',12,'Backgroundcolor',[1 1 0.47],'FontWeight','Bold');
+xlabel('Temperatura °C','FontSize',11,'FontWeight','Bold');
+ylabel('Fraccion Atomica','FontSize',11,'FontWeight','Bold');
+grid('on');
+
+
+case 4
+
+%PROGRAMA QUE CALCULA Y GRAFICA EL DIAGRAMA DE FASE DEL 
+%SEMICONDUCTOR BINARIO III-V InAs.
+clc
+R=8.32000896;
+DSf=60.792336;
+Tf=1215;
+DSfTf=7.386269E4;
+
+P0=900;
+
+m=0;
+
+barra=waitbar(0,'Calculando Diagrama de Fase del InAs...');
+for x=eps:0.001:0.97+eps,
+vieland=inline(['-0.5*((' num2str(R) '*T*' num2str(log(4*x*(1-x))) '+' num2str(DSfTf) '-' num2str(DSf) '*T)' '/' num2str((0.5-x)^2) ') -(1.616105E4-41.868*T)']);
+T=fsolve(vieland,P0,optimset('Display','off'));
+[Temp]=T-273.15;
+m=m+1;
+Temperatura(m)=Temp;
+waitbar(x/(0.97+eps),barra)
+end
+close(barra);
+Tempra=Temperatura';
+
+xt=eps:0.001:0.97+eps;
+
+axes(handles.axes1);
+plot(xt,Tempra,'r','LineWidth',3)
+axis([-0.01 0.97 300 1100]);
+title('Diagrama de Fase del InAs','FontSize',12,'Backgroundcolor',[1 1 0.47],'FontWeight','Bold');
+xlabel('Fraccion Atomica','FontSize',12,'FontWeight','Bold');
+ylabel('Temperatura °C','FontSize',12,'FontWeight','Bold');
+grid('on');
+ 
+
+axes(handles.axes2);
+semilogy(Tempra,xt,'r','LineWidth',3)
+axis([300 1100 1E-3 0.97]);
+title('Diagrama de Fase del InAs','FontSize',12,'Backgroundcolor',[1 1 0.47],'FontWeight','Bold');
+xlabel('Temperatura °C','FontSize',12,'FontWeight','Bold');
+ylabel('Fraccion Atomica','FontSize',12,'FontWeight','Bold');
+grid('on');    
+
+case 5
+%PROGRAMA QUE CALCULA Y GRAFICA EL DIAGRAMA DE FASE DEL 
+%SEMICONDUCTOR BINARIO III-V InSb.
+
+R=8.32000896;
+DSf=59.954976;
+Tf=798;
+DSfTf=4.7844070848E4;
+
+P0=360;
+
+m=0;
+
+barra=waitbar(0,'Calculando Diagrama de Fase del InSb...');
+for x=eps:0.001:0.97+eps,
+vieland=inline(['-0.5*((' num2str(R) '*T*' num2str(log(4*x*(1-x))) '+' num2str(DSfTf) '-' num2str(DSf) '*T)' '/' num2str((0.5-x)^2) ') -(1.423512E4-50.2416*T)']);
+T=fsolve(vieland,P0,optimset('Display','off'));
+[Temp]=T-273.15;
+m=m+1;
+Temperatura(m)=Temp;
+waitbar(x/(0.97+eps),barra)
+end
+close(barra);
+Tempra=Temperatura';
+
+xt=eps:0.001:0.97+eps;
+
+axes(handles.axes1);
+plot(xt,Tempra,'c','LineWidth',3)
+axis([-0.01 0.97 0 600]);
+title('Diagrama de Fase del InSb','FontSize',12,'Backgroundcolor',[1 1 0.47],'FontWeight','Bold');
+xlabel('Fraccion Atomica','FontSize',11,'FontWeight','Bold');
+ylabel('Temperatura °C','FontSize',11,'FontWeight','Bold');
+grid('on');
+%hold('all');
+ 
+axes(handles.axes2);
+semilogy(Tempra,xt,'c','LineWidth',3)
+axis([0 600 1E-3 0.97]);
+title('Diagrama de Fase del InSb','FontSize',12,'Backgroundcolor',[1 1 0.47],'FontWeight','Bold');
+xlabel('Temperatura °C','FontSize',11,'FontWeight','Bold');
+ylabel('Fraccion Atomica','FontSize',11,'FontWeight','Bold');
+grid('on');
+%hold('all');
+
+
+otherwise
+
+%PROGRAMA QUE CALCULA Y GRAFICA LOS DIAGRAMAS DE FASE DE 
+%SEMICONDUCTORES BINARIOS III-V (GASB GAAS INAS INSB).
+clc
+clear all
+R=8.32000896;
+DSf1=66.15144;
+Tf1=983;
+DSfTf1=65026.8655;
+
+P01=600;
+
+m1=0;
+
+barra1=waitbar(0,'Calculando Diagrama de Fase del GaSb...');
+for x1=eps:0.002:0.97+eps,
+vieland1=inline(['-0.5*((' num2str(R) '*T*' num2str(log(4*x1*(1-x1))) '+' num2str(DSfTf1) '-' num2str(DSf1) '*T)' '/' num2str((0.5-x1)^2) ') -(19677.96-25.1208*T)']);
+T1=fsolve(vieland1,P01,optimset('Display','off'));
+[Temp1]=T1-273.15;
+m1=m1+1;
+Temperatura1(m1)=Temp1;
+waitbar(x1/(0.97+eps),barra1)
+end
+close(barra1);
+Tempra1=Temperatura1';
+
+xt1=eps:0.002:0.97+eps;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%PROGRAMA QUE CALCULA Y GRAFICA EL DIAGRAMA DE FASE DEL 
+%SEMICONDUCTOR BINARIO III-V GaAs.
+clc
+R=8.32000896;
+DSf2=69.668352;
+Tf2=1511;
+DSfTf2=1.052689E5;
+
+P02=720;
+
+m2=0;
+
+barra2=waitbar(0,'Calculando Diagrama de Fase del GaAs...');
+for x2=eps:0.002:0.97+eps,
+vieland2=inline(['-0.5*((' num2str(R) '*T*' num2str(log(4*x2*(1-x2))) '+' num2str(DSfTf2) '-' num2str(DSf2) '*T)' '/' num2str((0.5-x2)^2) ') -(2.160389E4-38.351088*T)']);
+T2=fsolve(vieland2,P02,optimset('Display','off'));
+[Temp2]=T2-273.15;
+m2=m2+1;
+Temperatura2(m2)=Temp2;
+waitbar(x2/(0.97+eps),barra2)
+end
+close(barra2);
+Tempra2=Temperatura2';
+
+xt2=eps:0.002:0.97+eps;
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%PROGRAMA QUE CALCULA Y GRAFICA EL DIAGRAMA DE FASE DEL 
+%SEMICONDUCTOR BINARIO III-V InAs.
+clc
+R=8.32000896;
+DSf3=60.792336;
+Tf3=1215;
+DSfTf3=7.386269E4;
+
+P03=900;
+
+m3=0;
+
+barra3=waitbar(0,'Calculando Diagrama de Fase del InAs...');
+for x3=eps:0.002:0.97+eps,
+vieland3=inline(['-0.5*((' num2str(R) '*T*' num2str(log(4*x3*(1-x3))) '+' num2str(DSfTf3) '-' num2str(DSf3) '*T)' '/' num2str((0.5-x3)^2) ') -(1.616105E4-41.868*T)']);
+T3=fsolve(vieland3,P03,optimset('Display','off'));
+[Temp3]=T3-273.15;
+m3=m3+1;
+Temperatura3(m3)=Temp3;
+waitbar(x3/(0.97+eps),barra3)
+end
+close(barra3);
+Tempra3=Temperatura3';
+
+xt3=eps:0.002:0.97+eps;
+
+
+%PROGRAMA QUE CALCULA Y GRAFICA EL DIAGRAMA DE FASE DEL 
+%SEMICONDUCTOR BINARIO III-V InSb.
+clc
+R=8.32000896;
+DSf4=59.954976;
+Tf4=798;
+DSfTf4=4.7844070848E4;
+
+P04=360;
+
+m4=0;
+
+barra4=waitbar(0,'Calculando Diagrama de Fase del InSb...');
+for x4=eps:0.002:0.97+eps,
+vieland4=inline(['-0.5*((' num2str(R) '*T*' num2str(log(4*x4*(1-x4))) '+' num2str(DSfTf4) '-' num2str(DSf4) '*T)' '/' num2str((0.5-x4)^2) ') -(1.423512E4-50.2416*T)']);
+T4=fsolve(vieland4,P04,optimset('Display','off'));
+[Temp4]=T4-273.15;
+m4=m4+1;
+Temperatura4(m4)=Temp4;
+waitbar(x4/(0.97+eps),barra4)
+end
+close(barra4);
+Tempra4=Temperatura4';
+
+xt4=eps:0.002:0.97+eps;
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Codigos para graficar en el figure con subplot
+
+%Codigo para graficar el diagrama del GaSb
+
+
+hand=figure(1);
+set(hand,'Name','Diagramas de Fase Binarios de Semiconductores III-V');
+
+%% Create axes1
+subplot(2,4,1)
+plot(xt1,Tempra1,'b','LineWidth',3)
+axis([-0.01 0.97 200.0 800]);
+title('Diagrama de Fase del GaSb','FontSize',10,'Backgroundcolor',[1 1 0.47],'FontWeight','Bold');
+xlabel('Fraccion Atomica','FontSize',10,'FontWeight','Bold');
+ylabel('Temperatura °C','FontSize',10,'FontWeight','Bold');
+grid('on');
+ 
+
+%% Create axes2
+subplot(2,4,2)
+semilogy(Tempra1,xt1,'b','LineWidth',3)
+axis([250 800 1E-3 0.97]);
+title('Diagrama de Fase del GaSb','FontSize',10,'Backgroundcolor',[1 1 0.47],'FontWeight','Bold');
+xlabel('Temperatura °C','FontSize',10,'FontWeight','Bold');
+ylabel('Fraccion Atomica','FontSize',10,'FontWeight','Bold');
+grid('on');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Codigo para graficar el diagrama del GaAs
+
+%% Create axes1
+subplot(2,4,3)
+plot(xt2,Tempra2,'g','LineWidth',3)
+axis([-0.01 0.97 400 1400]);
+title('Diagrama de Fase del GaAs','FontSize',10,'Backgroundcolor',[1 1 0.47],'FontWeight','Bold');
+xlabel('Fraccion Atomica','FontSize',10,'FontWeight','Bold');
+ylabel('Temperatura °C','FontSize',10,'FontWeight','Bold');
+grid('on');
+
+ 
+%% Create plot1
+
+%% Create axes2
+subplot(2,4,4)
+semilogy(Tempra2,xt2,'g','LineWidth',3)
+axis([400 1400 1E-3 0.97]);
+title('Diagrama de Fase del GaAs','FontSize',10,'Backgroundcolor',[1 1 0.47],'FontWeight','Bold');
+xlabel('Temperatura °C','FontSize',10,'FontWeight','Bold');
+ylabel('Fraccion Atomica','FontSize',10,'FontWeight','Bold');
+grid('on');
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Codigo para graficar el diagrama del InAs
+
+%% Create axes1
+subplot(2,4,5)
+plot(xt3,Tempra3,'r','LineWidth',3)
+axis([-0.01 0.97 300 1100]);
+title('Diagrama de Fase del InAs','FontSize',10,'Backgroundcolor',[1 1 0.47],'FontWeight','Bold');
+xlabel('Fraccion Atomica','FontSize',10,'FontWeight','Bold');
+ylabel('Temperatura °C','FontSize',10,'FontWeight','Bold');
+grid('on');
+ 
+
+%% Create axes2
+subplot(2,4,6)
+semilogy(Tempra3,xt3,'r','LineWidth',3)
+axis([300 1100 1E-3 0.97]);
+title('Diagrama de Fase del InAs','FontSize',10,'Backgroundcolor',[1 1 0.47],'FontWeight','Bold');
+xlabel('Temperatura °C','FontSize',10,'FontWeight','Bold');
+ylabel('Fraccion Atomica','FontSize',10,'FontWeight','Bold');
+grid('on');
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Codigo para graficar InSb
+
+
+%% Create axes1
+subplot(2,4,7)
+plot(xt4,Tempra4,'c','LineWidth',3)
+axis([-0.01 0.97 100 600]);
+title('Diagrama de Fase del InSb','FontSize',10,'Backgroundcolor',[1 1 0.47],'FontWeight','Bold');
+xlabel('Fraccion Atomica','FontSize',10,'FontWeight','Bold');
+ylabel('Temperatura °C','FontSize',10,'FontWeight','Bold');
+grid('on');
+ 
+%% Create plot1
+
+
+%% Create axes2
+subplot(2,4,8)
+semilogy(Tempra4,xt4,'c','LineWidth',3)
+axis([50 600 1E-3 0.97]);
+title('Diagrama de Fase del InSb','FontSize',10,'Backgroundcolor',[1 1 0.47],'FontWeight','Bold');
+xlabel('Temperatura °C','FontSize',10,'FontWeight','Bold');
+ylabel('Fraccion Atomica','FontSize',10,'FontWeight','Bold');
+grid('on');
+
+
+%Para graficar segun reporta Panish en Phase equilibria in ternary III-V
+%systems. pag 51.
+
+
+hand2=figure(2);
+set(hand2,'Name','Figura reportada por M. B. Panish');
+semilogy(Tempra1,xt1,Tempra2,xt2,Tempra3,xt3,Tempra4,xt4,'LineWidth',2)
+axis([100 1300 2E-3 0.97])
+title('Calculated liquidus curves for the GaSb, GaAs, InAs and InSb systems','FontSize',12,'Backgroundcolor',[1 1 0.47],'FontWeight','Bold');
+xlabel('Temperatura °C','FontSize',12,'FontWeight','Bold');
+ylabel('x^L_{(V)}','FontSize',12,'FontWeight','Bold');
+grid('on');
+legend('GaSb','GaAs','InAs','InSb','Location','SouthEast','Orientation','Horizontal');
+    
+
+end
+
+
+% --------------------------------------------------------------------
+function Untitled_1_Callback(hObject, eventdata, handles)
+% hObject    handle to Untitled_1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+
+
+
+function edit1_Callback(hObject, eventdata, handles)
+% hObject    handle to edit1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit1 as text
+%        str2double(get(hObject,'String')) returns contents of edit1 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc
+    set(hObject,'BackgroundColor','white');
+else
+    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+end
+
+
+% --- Executes on button press in pushbutton2.
+function pushbutton2_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+%Obtener lo que el usuario indique como peso del solvente
+Tc=eval(get(handles.edit2,'string'));
+Wiii=eval(get(handles.edit1,'string'));
+
+%Para el panel button-group hay que preguntar por cada uno de ellos
+%Programa para calcular los pesos en el caso del GaSb
+if get(handles.radiobutton1,'value')==1
+R=8.32000896;
+DSf=66.15144;
+Tf=983;
+
+alfa1=19677.96;
+alfa2=25.1208;
+
+T=Tc+273.15;
+vieland=inline( ['-0.5*(('  num2str(R*T) '*log(4*x*(1-x))+' num2str(DSf*(Tf-T)) ')/(0.5-x)^2)-(' num2str(alfa1-alfa2*T) ')'],'x');
+x=fsolve(vieland,0.02,optimset('Display','off'));
+
+%Pesos atomicos necesarios
+Ga=69.723;
+Sb=121.75;
+
+%Solicitar peso del elemento III (solvente)
+W=(Ga+Sb)*(Wiii*(x/(Ga*(1-2*x))));
+set(handles.text5,'String',W);
+msgbox(num2str(x),'X');
+    
+elseif get(handles.radiobutton4,'value')==1
+%Programa que calcula la fraccion atomica
+%para el binario GaAs a la temperatura indicada
+%tambien calcula los pesos correspondientes.
+clc
+R=8.32000896;
+DSf=69.668352;
+Tf=1511;
+
+alfa1=2.260388E4;
+alfa2=38.351088;
+
+T=Tc+273.15;
+vieland=inline( ['-0.5*(('  num2str(R*T) '*log(4*x*(1-x))+' num2str(DSf*(Tf-T)) ')/(0.5-x)^2)-(' num2str(alfa1-alfa2*T) ')'],'x');
+x=fsolve(vieland,0.005,optimset('Display','off'));
+
+%Pesos atomicos necesarios
+Ga=69.723;
+As=74.922;
+
+%Solicitar peso del elemento III (solvente)
+W=(Ga+As)*(Wiii*(x/(Ga*(1-2*x))));
+set(handles.text5,'String',W);
+msgbox(num2str(x),'X');
+
+elseif get(handles.radiobutton5,'value')==1
+%Programa que calcula la fraccion atomica
+%para el binario InAs a la temperatura indicada
+%tambien calcula los pesos correspondientes.
+clc
+R=8.32000896;
+DSf=60.792336;
+Tf=1215;
+
+alfa1=1.6161048E4;
+alfa2=41.868;
+
+T=Tc+273.15;
+vieland=inline( ['-0.5*(('  num2str(R*T) '*log(4*x*(1-x))+' num2str(DSf*(Tf-T)) ')/(0.5-x)^2)-(' num2str(alfa1-alfa2*T) ')'],'x');
+x=fsolve(vieland,0.0005,optimset('Display','off'));
+
+%Pesos atomicos necesarios
+In=114.82;
+As=74.922;
+
+%Solicitar peso del elemento III (solvente)
+W=(In+As)*(Wiii*(x/(In*(1-2*x))));
+set(handles.text5,'String',W);
+msgbox(num2str(x),'X');
+
+%Para el panel button-group hay que preguntar por cada uno de ellos
+%Programa para calcular los pesos en el caso del InSb
+elseif get(handles.radiobutton6,'value')==1
+R=8.32000896;
+DSf=59.954976;
+Tf=798;
+
+alfa1=1.423512E4;
+alfa2=50.2416;
+
+T=Tc+273.15;
+vieland=inline( ['-0.5*(('  num2str(R*T) '*log(4*x*(1-x))+' num2str(DSf*(Tf-T)) ')/(0.5-x)^2)-(' num2str(alfa1-alfa2*T) ')'],'x');
+x=fsolve(vieland,0.005,optimset('Display','off'));
+
+%Pesos atomicos necesarios
+In=114.82;
+Sb=121.75;
+
+%Solicitar peso del elemento III (solvente)
+W=(In+Sb)*(Wiii*(x/(In*(1-2*x))));
+set(handles.text5,'String',W);
+msgbox(num2str(x),'X');
+
+    
+end
+
+function edit2_Callback(hObject, eventdata, handles)
+% hObject    handle to edit2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit2 as text
+%        str2double(get(hObject,'String')) returns contents of edit2 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc
+    set(hObject,'BackgroundColor','white');
+else
+    set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
+end
+
+
+
+
+% --------------------------------------------------------------------
+function Untitled_2_Callback(hObject, eventdata, handles)
+% hObject    handle to Untitled_2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+msgbox('Este es un programa que calcula y grafica el diagrama de fase para compuestos binarios semiconductores III-V que con frecuencia se obtienen en el laboratorio de Epitaxia en Fase Liquida del CIDS-ICUAP bajo la supervision del Dr. Javier Olvera H. La herramienta teorica que emplea es la planteada por Vieland. Asi mismo, se pueden conocer los pesos en gramos de los elementos que intervienen en el crecimiento de las capas.      Elaboro: ernesto.momox@siu.buap.mx','PDcalculator')
+
+
+
+
+
+% --- Executes when figure1 is resized.
+function figure1_ResizeFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
